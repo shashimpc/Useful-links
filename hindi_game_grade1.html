@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>हिंदी सीखो! - Grade 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Baloo 2', sans-serif;
+    background: linear-gradient(135deg, #fff9e6 0%, #ffe0f0 50%, #e0f0ff 100%);
+    min-height: 100vh;
+    padding: 16px;
+  }
+  #game-root {
+    max-width: 540px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.7);
+    border-radius: 24px;
+    padding: 20px 16px;
+    box-shadow: 0 8px 32px rgba(214,58,122,0.1);
+  }
+  .header { text-align: center; margin-bottom: 16px; }
+  .header h1 { font-size: 28px; font-weight: 800; color: #d63a7a; text-shadow: 2px 2px 0 #ffc0db; }
+  .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    background: white; border: 2.5px solid #d0d0d0; border-radius: 30px;
+    padding: 7px 18px; font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; color: #555; font-family: 'Baloo 2', sans-serif;
+  }
+  .tab-btn.active { border-color: #d63a7a; background: #d63a7a; color: white; transform: scale(1.05); }
+  .tab-btn:hover:not(.active) { border-color: #d63a7a; color: #d63a7a; }
+  .score-bar { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .score-pill { background: white; border: 2px solid #f0b400; border-radius: 20px; padding: 4px 16px; font-size: 15px; font-weight: 700; color: #b07800; }
+  .hearts { font-size: 20px; letter-spacing: 2px; }
+  .game-area { animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  .quiz-prompt {
+    text-align: center; background: white; border-radius: 16px; padding: 14px;
+    margin-bottom: 16px; border: 2.5px solid #ffd6ec;
+  }
+  .quiz-prompt .big-char { font-size: 56px; font-weight: 800; color: #d63a7a; line-height: 1; display: block; }
+  .quiz-prompt .prompt-text { font-size: 16px; color: #555; margin-top: 6px; font-weight: 600; }
+  .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 360px; margin: 0 auto; }
+  .opt-btn {
+    background: white; border: 3px solid #e0e0e0; border-radius: 14px; padding: 12px 8px;
+    font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.18s; color: #333;
+    font-family: 'Baloo 2', sans-serif; text-align: center;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: #4a90d9; transform: scale(1.04); background: #f0f7ff; }
+  .opt-btn.correct { background: #e8fdf0 !important; border-color: #22c45d !important; color: #0a8a3a !important; }
+  .opt-btn.wrong { background: #fff0f0 !important; border-color: #e84040 !important; color: #c00 !important; }
+  .opt-btn:disabled { cursor: default; }
+  .feedback { text-align: center; font-size: 20px; font-weight: 700; min-height: 32px; margin: 10px 0; }
+  .feedback.good { color: #22c45d; }
+  .feedback.bad { color: #e84040; }
+  .next-btn {
+    display: block; margin: 10px auto 0; background: #d63a7a; color: white; border: none;
+    border-radius: 30px; padding: 10px 36px; font-size: 17px; font-weight: 700; cursor: pointer;
+    transition: transform 0.15s, background 0.15s; font-family: 'Baloo 2', sans-serif;
+  }
+  .next-btn:hover { background: #b02060; transform: scale(1.04); }
+  .number-display { text-align: center; background: white; border-radius: 18px; padding: 16px; margin-bottom: 14px; border: 2.5px solid #ffe0a0; }
+  .number-big { font-size: 64px; font-weight: 800; color: #f0a000; line-height: 1; }
+  .number-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; max-width: 280px; margin-left: auto; margin-right: auto; }
+  .dot { width: 28px; height: 28px; border-radius: 50%; background: #f0a000; display: inline-block; }
+  .animal-card-big {
+    background: white; border-radius: 20px; padding: 20px; text-align: center;
+    border: 3px solid #b0d8ff; margin-bottom: 14px; max-width: 320px; margin-left: auto; margin-right: auto;
+  }
+  .animal-emoji { font-size: 72px; display: block; line-height: 1; margin-bottom: 8px; }
+  .animal-name-hi { font-size: 30px; font-weight: 800; color: #1a60b0; }
+  .animal-sound { font-size: 14px; color: #e67; margin-top: 6px; font-weight: 600; }
+  .result-panel { text-align: center; background: white; border-radius: 18px; padding: 20px; margin-top: 10px; border: 2.5px solid #e0e0e0; animation: fadeIn 0.4s ease; }
+  .result-emoji { font-size: 52px; display: block; }
+  .result-msg { font-size: 20px; font-weight: 700; color: #d63a7a; margin-top: 8px; }
+  .result-score { font-size: 16px; color: #666; margin-top: 4px; }
+  .restart-btn { display: inline-block; margin-top: 12px; background: #f0a000; color: white; border: none; border-radius: 30px; padding: 10px 28px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Baloo 2', sans-serif; }
+  .restart-btn:hover { background: #c88000; }
+</style>
+</head>
+<body>
+<div id="game-root">
+  <div class="header">
+    <h1>🎓 हिंदी सीखो! 🎓</h1>
+    <p style="font-size:14px;color:#888;margin-top:2px;">Grade 1 • पहली कक्षा</p>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setTab('akshar')">📝 अक्षर</button>
+    <button class="tab-btn" onclick="setTab('ginti')">🔢 गिनती</button>
+    <button class="tab-btn" onclick="setTab('janwar')">🐘 जानवर</button>
+    <button class="tab-btn" onclick="setTab('rang')">🎨 रंग</button>
+  </div>
+  <div class="score-bar">
+    <div class="score-pill">⭐ अंक: <span id="score">0</span></div>
+    <div class="hearts" id="hearts">❤️❤️❤️</div>
+  </div>
+  <div id="game-container"></div>
+</div>
+<script>
+const AKSHAR = [
+  {hi:'अ',en:'a',word:'अनार',wEn:'Pomegranate'},{hi:'आ',en:'aa',word:'आम',wEn:'Mango'},
+  {hi:'इ',en:'i',word:'इमली',wEn:'Tamarind'},{hi:'ई',en:'ee',word:'ईख',wEn:'Sugarcane'},
+  {hi:'उ',en:'u',word:'उल्लू',wEn:'Owl'},{hi:'ऊ',en:'oo',word:'ऊन',wEn:'Wool'},
+  {hi:'क',en:'ka',word:'कमल',wEn:'Lotus'},{hi:'ख',en:'kha',word:'खरगोश',wEn:'Rabbit'},
+  {hi:'ग',en:'ga',word:'गाय',wEn:'Cow'},{hi:'घ',en:'gha',word:'घड़ी',wEn:'Clock'},
+  {hi:'च',en:'cha',word:'चाँद',wEn:'Moon'},{hi:'छ',en:'chha',word:'छाता',wEn:'Umbrella'},
+  {hi:'ज',en:'ja',word:'जहाज़',wEn:'Ship'},{hi:'झ',en:'jha',word:'झरना',wEn:'Waterfall'},
+  {hi:'ट',en:'ta',word:'टमाटर',wEn:'Tomato'},{hi:'त',en:'ta',word:'तरबूज',wEn:'Watermelon'},
+  {hi:'द',en:'da',word:'दवाई',wEn:'Medicine'},{hi:'न',en:'na',word:'नदी',wEn:'River'},
+  {hi:'प',en:'pa',word:'पतंग',wEn:'Kite'},{hi:'ब',en:'ba',word:'बकरी',wEn:'Goat'},
+];
+const NUMBERS = [
+  {n:1,hi:'एक',dots:1},{n:2,hi:'दो',dots:2},{n:3,hi:'तीन',dots:3},{n:4,hi:'चार',dots:4},
+  {n:5,hi:'पाँच',dots:5},{n:6,hi:'छह',dots:6},{n:7,hi:'सात',dots:7},
+  {n:8,hi:'आठ',dots:8},{n:9,hi:'नौ',dots:9},{n:10,hi:'दस',dots:10},
+];
+const ANIMALS = [
+  {emoji:'🐘',hi:'हाथी',en:'Elephant',sound:'पों पों'},{emoji:'🦁',hi:'शेर',en:'Lion',sound:'दहाड़'},
+  {emoji:'🐄',hi:'गाय',en:'Cow',sound:'मू मू'},{emoji:'🐒',hi:'बंदर',en:'Monkey',sound:'उछल-कूद'},
+  {emoji:'🐦',hi:'चिड़िया',en:'Bird',sound:'चीं चीं'},{emoji:'🐟',hi:'मछली',en:'Fish',sound:'पानी में'},
+  {emoji:'🐰',hi:'खरगोश',en:'Rabbit',sound:'फुदकना'},{emoji:'🐍',hi:'साँप',en:'Snake',sound:'फुफकार'},
+  {emoji:'🦋',hi:'तितली',en:'Butterfly',sound:'उड़ना'},{emoji:'🐸',hi:'मेंढक',en:'Frog',sound:'टर टर'},
+];
+const COLORS = [
+  {hi:'लाल',en:'Red',bg:'#e84040'},{hi:'नीला',en:'Blue',bg:'#2060d0'},
+  {hi:'पीला',en:'Yellow',bg:'#f0c000'},{hi:'हरा',en:'Green',bg:'#22aa44'},
+  {hi:'नारंगी',en:'Orange',bg:'#f07010'},{hi:'बैंगनी',en:'Purple',bg:'#8040c0'},
+  {hi:'गुलाबी',en:'Pink',bg:'#e84499'},{hi:'सफ़ेद',en:'White',bg:'#f0f0f0'},
+];
+let currentTab='akshar',score=0,hearts=3,quizState={};
+function setTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',['akshar','ginti','janwar','rang'][i]===tab);});
+  renderGame();
+}
+function updateScore(v){score=Math.max(0,score+v);document.getElementById('score').textContent=score;}
+function updateHearts(v){hearts=Math.max(0,hearts+v);let h='';for(let i=0;i<3;i++)h+=(i<hearts)?'❤️':'🖤';document.getElementById('hearts').innerHTML=h;}
+function renderGame(){
+  const c=document.getElementById('game-container');
+  if(currentTab==='akshar')renderAkshar(c);
+  else if(currentTab==='ginti')renderGinti(c);
+  else if(currentTab==='janwar')renderJanwar(c);
+  else renderRang(c);
+}
+function renderAkshar(c){
+  if(!quizState.akshar)startAksharQuiz();
+  const q=quizState.akshar;
+  let html=`<div class="game-area"><div class="quiz-prompt"><span class="big-char">${q.target.hi}</span><div class="prompt-text">"${q.target.hi}" से शुरू होने वाला शब्द कौन सा है?</div></div><div class="options-grid">`;
+  q.options.forEach((opt,i)=>{
+    let cls='';
+    if(q.answered){if(opt.hi===q.target.hi)cls='correct';else if(q.chosen===i)cls='wrong';}
+    html+=`<button class="opt-btn ${cls}" onclick="answerAkshar(${i})" ${q.answered?'disabled':''}>${opt.word}<br><span style="font-size:12px;color:#aaa">${opt.wEn}</span></button>`;
+  });
+  html+=`</div><div class="feedback ${q.fb?'good':'bad'}">${q.fbText||''}</div>${q.answered?`<button class="next-btn" onclick="nextAkshar()">अगला ➡️</button>`:''}<div style="margin-top:14px;text-align:center;font-size:13px;color:#aaa">${q.num}/10 सवाल</div></div>`;
+  c.innerHTML=html;
+}
+function startAksharQuiz(){
+  const s=[...AKSHAR].sort(()=>Math.random()-0.5);
+  quizState.akshar={questions:s.slice(0,10),index:0,num:1,answered:false,fb:false,fbText:'',chosen:-1};
+  setAksharQuestion();
+}
+function setAksharQuestion(){
+  const q=quizState.akshar;
+  if(q.index>=q.questions.length){showResult('akshar');return;}
+  const target=q.questions[q.index];
+  const others=AKSHAR.filter(a=>a.hi!==target.hi).sort(()=>Math.random()-0.5).slice(0,3);
+  q.target=target;q.options=[...others,target].sort(()=>Math.random()-0.5);
+  q.answered=false;q.fbText='';q.chosen=-1;q.num=q.index+1;
+}
+function answerAkshar(i){
+  const q=quizState.akshar;if(q.answered)return;q.answered=true;q.chosen=i;
+  if(q.options[i].hi===q.target.hi){q.fb=true;q.fbText='✅ शाबाश! बिल्कुल सही!';updateScore(10);}
+  else{q.fb=false;q.fbText=`❌ गलत! सही जवाब: ${q.target.word}`;updateHearts(-1);}
+  renderGame();
+}
+function nextAkshar(){quizState.akshar.index++;setAksharQuestion();renderGame();}
+function renderGinti(c){
+  if(!quizState.ginti)startGintiQuiz();
+  const q=quizState.ginti,n=q.target;
+  let dots='';for(let i=0;i<n.dots;i++)dots+=`<div class="dot"></div>`;
+  let html=`<div class="game-area"><div class="number-display"><span class="number-big">${n.n}</span><div class="number-dots">${dots}</div></div><div class="quiz-prompt" style="padding:10px;margin-bottom:12px;border-color:#ffe0a0"><div class="prompt-text" style="font-size:15px">${n.n} को हिंदी में क्या कहते हैं?</div></div><div class="options-grid">`;
+  q.options.forEach((opt,i)=>{
+    let cls='';
+    if(q.answered){if(opt.n===n.n)cls='correct';else if(q.chosen===i)cls='wrong';}
+    html+=`<button class="opt-btn ${cls}" onclick="answerGinti(${i})" ${q.answered?'disabled':''}>${opt.hi}</button>`;
+  });
+  html+=`</div><div class="feedback ${q.fb?'good':'bad'}">${q.fbText||''}</div>${q.answered?`<button class="next-btn" onclick="nextGinti()">अगला ➡️</button>`:''}<div style="margin-top:14px;text-align:center;font-size:13px;color:#aaa">${q.num}/10 सवाल</div></div>`;
+  c.innerHTML=html;
+}
+function startGintiQuiz(){
+  const s=[...NUMBERS].sort(()=>Math.random()-0.5);
+  quizState.ginti={questions:s.slice(0,10),index:0,num:1,answered:false,fb:false,fbText:'',chosen:-1};
+  setGintiQuestion();
+}
+function setGintiQuestion(){
+  const q=quizState.ginti;if(q.index>=q.questions.length){showResult('ginti');return;}
+  const target=q.questions[q.index];
+  const others=NUMBERS.filter(n=>n.n!==target.n).sort(()=>Math.random()-0.5).slice(0,3);
+  q.target=target;q.options=[...others,target].sort(()=>Math.random()-0.5);
+  q.answered=false;q.fbText='';q.chosen=-1;q.num=q.index+1;
+}
+function answerGinti(i){
+  const q=quizState.ginti;if(q.answered)return;q.answered=true;q.chosen=i;
+  if(q.options[i].n===q.target.n){q.fb=true;q.fbText=`✅ वाह! ${q.target.n} = ${q.target.hi}`;updateScore(10);}
+  else{q.fb=false;q.fbText=`❌ गलत! ${q.target.n} = ${q.target.hi}`;updateHearts(-1);}
+  renderGame();
+}
+function nextGinti(){quizState.ginti.index++;setGintiQuestion();renderGame();}
+function renderJanwar(c){
+  if(!quizState.janwar)startJanwarQuiz();
+  const q=quizState.janwar,a=q.target;
+  let html=`<div class="game-area"><div class="animal-card-big"><span class="animal-emoji">${a.emoji}</span><div class="animal-sound">${a.sound}</div></div><div class="quiz-prompt" style="padding:10px;margin-bottom:12px;border-color:#b0e0ff"><div class="prompt-text">इस जानवर का नाम क्या है?</div></div><div class="options-grid">`;
+  q.options.forEach((opt,i)=>{
+    let cls='';
+    if(q.answered){if(opt.hi===a.hi)cls='correct';else if(q.chosen===i)cls='wrong';}
+    html+=`<button class="opt-btn ${cls}" onclick="answerJanwar(${i})" ${q.answered?'disabled':''}>${opt.hi}<br><span style="font-size:11px;color:#aaa">${opt.en}</span></button>`;
+  });
+  html+=`</div><div class="feedback ${q.fb?'good':'bad'}">${q.fbText||''}</div>${q.answered?`<button class="next-btn" onclick="nextJanwar()">अगला ➡️</button>`:''}<div style="margin-top:14px;text-align:center;font-size:13px;color:#aaa">${q.num}/10 सवाल</div></div>`;
+  c.innerHTML=html;
+}
+function startJanwarQuiz(){
+  const s=[...ANIMALS].sort(()=>Math.random()-0.5);
+  quizState.janwar={questions:s.slice(0,10),index:0,num:1,answered:false,fb:false,fbText:'',chosen:-1};
+  setJanwarQuestion();
+}
+function setJanwarQuestion(){
+  const q=quizState.janwar;if(q.index>=q.questions.length){showResult('janwar');return;}
+  const target=q.questions[q.index];
+  const others=ANIMALS.filter(a=>a.hi!==target.hi).sort(()=>Math.random()-0.5).slice(0,3);
+  q.target=target;q.options=[...others,target].sort(()=>Math.random()-0.5);
+  q.answered=false;q.fbText='';q.chosen=-1;q.num=q.index+1;
+}
+function answerJanwar(i){
+  const q=quizState.janwar;if(q.answered)return;q.answered=true;q.chosen=i;
+  if(q.options[i].hi===q.target.hi){q.fb=true;q.fbText=`✅ शाबाश! यह ${q.target.hi} है!`;updateScore(10);}
+  else{q.fb=false;q.fbText=`❌ गलत! यह ${q.target.hi} है`;updateHearts(-1);}
+  renderGame();
+}
+function nextJanwar(){quizState.janwar.index++;setJanwarQuestion();renderGame();}
+function renderRang(c){
+  if(!quizState.rang)startRangQuiz();
+  const q=quizState.rang,tgt=q.target;
+  let html=`<div class="game-area"><div class="quiz-prompt" style="padding:14px;margin-bottom:12px;border-color:#e0d0ff"><div style="width:80px;height:80px;border-radius:50%;background:${tgt.bg};margin:0 auto 10px;border:3px solid #ccc"></div><div class="prompt-text">इस रंग का नाम क्या है?</div></div><div class="options-grid">`;
+  q.options.forEach((opt,i)=>{
+    let cls='';
+    if(q.answered){if(opt.hi===tgt.hi)cls='correct';else if(q.chosen===i)cls='wrong';}
+    html+=`<button class="opt-btn ${cls}" onclick="answerRang(${i})" ${q.answered?'disabled':''}>${opt.hi}<br><span style="font-size:11px;color:#aaa">${opt.en}</span></button>`;
+  });
+  html+=`</div><div class="feedback ${q.fb?'good':'bad'}">${q.fbText||''}</div>${q.answered?`<button class="next-btn" onclick="nextRang()">अगला ➡️</button>`:''}<div style="margin-top:14px;text-align:center;font-size:13px;color:#aaa">${q.num}/8 सवाल</div></div>`;
+  c.innerHTML=html;
+}
+function startRangQuiz(){
+  const s=[...COLORS].sort(()=>Math.random()-0.5);
+  quizState.rang={questions:s,index:0,num:1,answered:false,fb:false,fbText:'',chosen:-1};
+  setRangQuestion();
+}
+function setRangQuestion(){
+  const q=quizState.rang;if(q.index>=q.questions.length){showResult('rang');return;}
+  const target=q.questions[q.index];
+  const others=COLORS.filter(c=>c.hi!==target.hi).sort(()=>Math.random()-0.5).slice(0,3);
+  q.target=target;q.options=[...others,target].sort(()=>Math.random()-0.5);
+  q.answered=false;q.fbText='';q.chosen=-1;q.num=q.index+1;
+}
+function answerRang(i){
+  const q=quizState.rang;if(q.answered)return;q.answered=true;q.chosen=i;
+  if(q.options[i].hi===q.target.hi){q.fb=true;q.fbText=`✅ बहुत अच्छे! यह ${q.target.hi} है!`;updateScore(10);}
+  else{q.fb=false;q.fbText=`❌ गलत! यह ${q.target.hi} है`;updateHearts(-1);}
+  renderGame();
+}
+function nextRang(){quizState.rang.index++;setRangQuestion();renderGame();}
+function showResult(tab){
+  const total=tab==='rang'?80:100,pct=Math.round((score/total)*100);
+  let emoji=pct>=80?'🏆':pct>=50?'😊':'💪';
+  let msg=pct>=80?'बहुत शानदार! तुम बहुत होशियार हो!':pct>=50?'अच्छा काम! थोड़ी और प्रैक्टिस करो।':'हिम्मत रखो! फिर कोशिश करो!';
+  document.getElementById('game-container').innerHTML=`<div class="result-panel"><span class="result-emoji">${emoji}</span><div class="result-msg">${msg}</div><div class="result-score">तुम्हारे अंक: ${score} | ${pct}%</div><button class="restart-btn" onclick="restartGame('${tab}')">🔄 फिर खेलो</button></div>`;
+}
+function restartGame(tab){
+  score=0;hearts=3;
+  document.getElementById('score').textContent='0';
+  document.getElementById('hearts').innerHTML='❤️❤️❤️';
+  quizState[tab]=null;renderGame();
+}
+renderGame();
+</script>
+</body>
+</html>
